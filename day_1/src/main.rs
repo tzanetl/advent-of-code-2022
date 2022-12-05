@@ -4,9 +4,7 @@ use std::path::Path;
 
 fn read_input_file() -> String {
     let filepath = Path::new("input.txt");
-    let disp = filepath.display();
-    let exists = filepath.exists();
-    println!("Input file: {disp}, exists: {exists}");
+    println!("Input file: {:?}, exists: {:?}", filepath, filepath.exists());
     let content = fs::read_to_string(filepath).expect("unable to read message file");
     return content;
 }
