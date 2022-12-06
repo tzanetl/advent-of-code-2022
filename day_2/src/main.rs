@@ -24,18 +24,18 @@ impl FromStr for RPSSelect {
 
 impl RPSSelect {
     pub fn from_result(opponent: &RPSSelect, result: &str) -> Self {
-        let mut result_map: HashMap<(&RPSSelect, &str), RPSSelect> = HashMap::from([
-            ((&RPSSelect::Rock, "X"), RPSSelect::Scissors),
-            ((&RPSSelect::Rock, "Y"), RPSSelect::Rock),
-            ((&RPSSelect::Rock, "Z"), RPSSelect::Paper),
-            ((&RPSSelect::Paper, "X"), RPSSelect::Rock),
-            ((&RPSSelect::Paper, "Y"), RPSSelect::Paper),
-            ((&RPSSelect::Paper, "Z"), RPSSelect::Scissors),
-            ((&RPSSelect::Scissors, "X"), RPSSelect::Paper),
-            ((&RPSSelect::Scissors, "Y"), RPSSelect::Scissors),
-            ((&RPSSelect::Scissors, "Z"), RPSSelect::Rock),
-        ]);
-        return result_map.remove(&(opponent, result)).unwrap();
+        match (opponent, result) {
+            (&RPSSelect::Rock, "X") => RPSSelect::Scissors,
+            (&RPSSelect::Rock, "Y") => RPSSelect::Rock,
+            (&RPSSelect::Rock, "Z") => RPSSelect::Paper,
+            (&RPSSelect::Paper, "X") => RPSSelect::Rock,
+            (&RPSSelect::Paper, "Y") => RPSSelect::Paper,
+            (&RPSSelect::Paper, "Z") => RPSSelect::Scissors,
+            (&RPSSelect::Scissors, "X") => RPSSelect::Paper,
+            (&RPSSelect::Scissors, "Y") => RPSSelect::Scissors,
+            (&RPSSelect::Scissors, "Z") => RPSSelect::Rock,
+            _ => panic!("Invalid result")
+        }
     }
 
     pub fn from_opponent(s: &str) -> Self {
