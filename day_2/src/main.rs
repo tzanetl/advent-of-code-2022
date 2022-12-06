@@ -2,7 +2,6 @@ use std::{env, str::FromStr, collections::HashMap};
 
 use utils;
 
-
 #[derive(Debug, Eq, PartialEq, Hash)]
 enum RPSSelect {
     Rock,
@@ -24,6 +23,30 @@ impl FromStr for RPSSelect {
 }
 
 impl RPSSelect {
+    pub fn from_result(opponent: &RPSSelect, result: &str) -> Self {
+        let mut result_map: HashMap<(&RPSSelect, &str), RPSSelect> = HashMap::from([
+            ((&RPSSelect::Rock, "X"), RPSSelect::Scissors),
+            ((&RPSSelect::Rock, "Y"), RPSSelect::Rock),
+            ((&RPSSelect::Rock, "Z"), RPSSelect::Paper),
+            ((&RPSSelect::Paper, "X"), RPSSelect::Rock),
+            ((&RPSSelect::Paper, "Y"), RPSSelect::Paper),
+            ((&RPSSelect::Paper, "Z"), RPSSelect::Scissors),
+            ((&RPSSelect::Scissors, "X"), RPSSelect::Paper),
+            ((&RPSSelect::Scissors, "Y"), RPSSelect::Scissors),
+            ((&RPSSelect::Scissors, "Z"), RPSSelect::Rock),
+        ]);
+        return result_map.remove(&(opponent, result)).unwrap();
+    }
+
+    pub fn from_opponent(s: &str) -> Self {
+        match s {
+            "A" => RPSSelect::Rock,
+            "B" => RPSSelect::Paper,
+            "C" => RPSSelect::Scissors,
+            _ => panic!("Unknown RPS selection")
+        }
+    }
+
     pub fn points(&mut self) -> i32 {
         match self {
             RPSSelect::Rock => 1,
@@ -32,7 +55,6 @@ impl RPSSelect {
         }
     }
 }
-
 
 #[derive(Debug)]
 struct RPSMatch {
@@ -58,6 +80,13 @@ impl FromStr for RPSMatch {
 }
 
 impl RPSMatch {
+    pub fn from_match_result(s: &str) -> Self {
+        let split: Vec<&str> = s.split(" ").collect();
+        let opponent = RPSSelect::from_opponent(split[0]);
+        let me = RPSSelect::from_result(&opponent, split[1]);
+        RPSMatch { me: me, opponent: opponent }
+    }
+
     pub fn match_points(&mut self) -> i32 {
         let rps_map:HashMap<(&RPSSelect, &RPSSelect), i32> = HashMap::from([
             ((&RPSSelect::Rock, &RPSSelect::Rock), 3),
@@ -76,7 +105,6 @@ impl RPSMatch {
     }
 }
 
-
 fn main() {
     let args: Vec<String> = env::args().collect();
     let input = utils::read_input(&args);
@@ -88,5 +116,12 @@ fn main() {
         rps_match = RPSMatch::from_str(&line).unwrap();
         my_points += rps_match.match_points();
     }
-    println!("My points: {}", my_points)
+    println!("My points: {}", my_points);
+
+    let mut my_points_correct: i32 = 0;
+    for line in input.lines() {
+        rps_match = RPSMatch::from_match_result(&line);
+        my_points_correct += rps_match.match_points();
+    }
+    println!("My points after correction: {}", my_points_correct);
 }
