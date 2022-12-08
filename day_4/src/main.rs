@@ -1,7 +1,10 @@
 use std::env;
 
+use log::debug;
+
 use utils::{read_input, set_logging_level};
 
+#[derive(Debug)]
 struct IdRange {
     start: i32,
     end: i32
@@ -21,6 +24,12 @@ impl IdRange {
         let end_out: bool = self.end < other.end;
         return !start_out & !end_out;
     }
+
+    pub fn intersects(&self, other: &IdRange) -> bool {
+        let cond1: bool = !(self.start > other.end);
+        let cond2: bool = !(self.end < other.start);
+        return cond1 & cond2;
+    }
 }
 
 fn main() {
@@ -29,6 +38,7 @@ fn main() {
     let input = read_input(&args);
 
     let mut fully_contained: i32 = 0;
+    let mut has_intersection: i32 = 0;
     let mut split: Vec<&str>;
     let mut range1: IdRange;
     let mut range2: IdRange;
@@ -41,8 +51,14 @@ fn main() {
         if range1.contains(&range2) | range2.contains(&range1) {
             fully_contained += 1;
         }
+
+        if range1.intersects(&range2) {
+            debug!("{:?} {:?}", range1, range2);
+            has_intersection += 1;
+        }
     }
-    println!("Fully contained ranges: {fully_contained}")
+    println!("Fully contained ranges: {fully_contained}");
+    println!("Interecting ranges: {has_intersection}");
 }
 
 #[cfg(test)]
