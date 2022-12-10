@@ -29,12 +29,12 @@ fn parse_size(args: &Vec<String>) -> usize {
 fn main() -> std::io::Result<()> {
     let args: Vec<String> = env::args().collect();
     set_logging_level(&args);
-    println!("{:?}", args);
     let filepath = parse_input_file_path(&args);
 
     let mut char_buffer: VecDeque<char> = VecDeque::new();
     let size: usize = parse_size(&args);
     let file = BufReader::new(File::open(filepath)?);
+    println!("Set marker lenght with '--size N'");
     println!("Marker lenght: {size}");
 
     for (index, byte) in file.bytes().enumerate() {

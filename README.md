@@ -2,7 +2,7 @@ Advent of Code 2022
 -------------------
 [Advent of Code 2022](https://adventofcode.com/2022) written in rust.
 
-Both parts for each day are included in the same project and are ran simultaniously.
+Both parts for each day are included in the same project.
 
 # Change Log
 
