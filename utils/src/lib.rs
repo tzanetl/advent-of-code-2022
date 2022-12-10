@@ -12,7 +12,7 @@ fn read_file(filepath: &Path) -> String {
     return content;
 }
 
-fn parse_input_file_path(args: &Vec<String>) -> &Path {
+pub fn parse_input_file_path(args: &Vec<String>) -> &Path {
     if args.contains(&String::from("--test")) {
         return Path::new("test_input.txt")
     } else {

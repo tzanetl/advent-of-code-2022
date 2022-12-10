@@ -6,6 +6,10 @@ Both parts for each day are included in the same project and are ran simultaniou
 
 # Change Log
 
+## Day 6
+- Takes a keyword argument `--size N` to set the lenght of the start message marker
+    - Defaults to 4
+
 ## Day 3
 - Add logging
     - `--test` sets logging level as `log::level::Debug`, otherwise `log::level::Info`
