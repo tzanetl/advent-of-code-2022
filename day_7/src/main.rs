@@ -116,6 +116,19 @@ fn size_of_small_folder(size_map: &HashMap<String, usize>, max: &usize) -> usize
     return total_size;
 }
 
+fn smallest_possible_folder(size_map: &HashMap<String, usize>, min: &usize) -> (String, usize) {
+    let mut smallest_dir: Option<&str> = None;
+    let mut smallest_size: &usize = &usize::MAX;
+
+    for (dir, size) in size_map.iter() {
+        if !(size < min) & (size < &smallest_size) {
+            smallest_dir = Some(dir);
+            smallest_size = size;
+        }
+    }
+    return (smallest_dir.expect("No directories over minimum size").to_string(), *smallest_size);
+}
+
 fn main() {
     let args: Vec<String> = env::args().collect();
     set_logging_level(&args);
@@ -131,5 +144,14 @@ fn main() {
     let size_map = filesystem.folder_sizes();
     debug!("{:?}", size_map);
     let size_of_small = size_of_small_folder(&size_map, &100000);
-    println!("Total size of small directories: {size_of_small}")
+    println!("Total size of small directories: {size_of_small}");
+
+    let total_disk_space: usize = 70000000;
+    let required_disk_space: usize = 30000000;
+    let free_disk_space: usize = total_disk_space - size_map["/"];
+    let min_deletion: usize = required_disk_space - free_disk_space;
+    debug!("Free disk space: {free_disk_space}");
+    debug!("Minimum folder size: {min_deletion}");
+    let (smallest_dir, smallest_size) = smallest_possible_folder(&size_map, &min_deletion);
+    println!("Smallest applicable directory: {smallest_dir} ({smallest_size})");
 }
