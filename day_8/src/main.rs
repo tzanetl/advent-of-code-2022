@@ -2,6 +2,7 @@ use std::env;
 use std::collections::HashSet;
 
 use log::debug;
+use itertools::iproduct;
 
 use utils::{read_input, set_logging_level};
 
@@ -130,6 +131,74 @@ impl Forest {
         }
         return visible_trees.len();
     }
+
+    fn scenic_score(&self, row: &usize, col: &usize) -> usize {
+        let tree_height: &usize = self.tree_loc(row, col);
+        let mut scenic_score: usize = 1;
+        let mut tree_i: &usize;
+
+        // Up
+        for (e, irow) in (0..*row).rev().enumerate() {
+            tree_i = self.tree_loc(&irow, col);
+
+            if (tree_i >= tree_height) | (irow == 0) {
+                let direction_score = e + 1;
+                debug!("up: {direction_score}");
+                scenic_score *= direction_score;
+                break;
+            }
+        }
+
+        // Left
+        for (e, icol) in (0..*col).rev().enumerate() {
+            tree_i = self.tree_loc(row, &icol);
+
+            if (tree_i >= tree_height) | (icol == 0) {
+                let direction_score = e + 1;
+                debug!("left: {direction_score}");
+                scenic_score *= direction_score;
+                break;
+            }
+        }
+
+        // Right
+        for (e, icol) in ((*col + 1)..self.width).enumerate() {
+            tree_i = self.tree_loc(row, &icol);
+            debug!("{e}");
+            if (tree_i >= tree_height) | (icol + 1 == self.width){
+                let direction_score = e + 1;
+                debug!("right: {direction_score}");
+                scenic_score *= direction_score;
+                break;
+            }
+        }
+
+        // Down
+        for (e, irow) in ((*row + 1)..self.height()).enumerate() {
+            tree_i = self.tree_loc(&irow, col);
+
+            if (tree_i >= tree_height) | (irow + 1 == self.height()) {
+                let direction_score = e + 1;
+                debug!("down: {direction_score}");
+                scenic_score *= direction_score;
+                break;
+            }
+        }
+        debug!("row: {} col: {} score: {}", row, col, scenic_score);
+        return scenic_score;
+    }
+
+    pub fn highest_scenic(&self) -> usize {
+        let mut high_score: usize = 0;
+        for (row, col) in iproduct!(1..(self.width - 1), 1..(self.height() - 1)) {
+            let tree_score: usize = self.scenic_score(&row, &col);
+            if tree_score > high_score {
+                high_score = tree_score;
+            }
+        }
+
+        return high_score;
+    }
 }
 
 
@@ -149,5 +218,8 @@ fn main() {
     println!("Width: {}", forest.width);
     println!("Height: {}", forest.height());
     let visible = forest.visible_trees();
-    println!("Visible trees: {visible}")
+    println!("Visible trees: {visible}");
+
+    let scenic_score: usize = forest.highest_scenic();
+    println!("Highest scenic score: {scenic_score}")
 }
