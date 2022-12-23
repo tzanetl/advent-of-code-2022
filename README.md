@@ -4,6 +4,8 @@ Advent of Code 2022
 
 Both parts for each day are included in the same project.
 
+Expects input files to have Windows line endings (`\r\n`)
+
 # Change Log
 
 ## Day 6
