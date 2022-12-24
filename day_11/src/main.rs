@@ -10,11 +10,12 @@ struct Monkey {
     operation: Vec<String>,
     divisible: usize,
     targets: Vec<usize>,
+    reduce_by: usize,
     inscount: usize
 }
 
 impl Monkey {
-    pub fn from_string(input: &str) -> Monkey {
+    pub fn from_string(input: &str, reduce_by: usize) -> Monkey {
         let lines: Vec<&str> = input.lines().collect();
         // Parse items
         let items_str: &str = lines[1].split(":").last().unwrap();
@@ -43,6 +44,7 @@ impl Monkey {
             operation: operation,
             divisible: divisible,
             targets: targets,
+            reduce_by: reduce_by,
             inscount: 0
         }
     }
@@ -59,12 +61,13 @@ impl Monkey {
         }
     }
 
-    pub fn pass(&mut self) -> Option<usize> {
+    pub fn pass(&mut self, modulo_value: usize) -> Option<usize> {
         let item_option = self.items.pop();
         match item_option {
             Some(item) => {
-                let new_item = operate(&item, &self.operation);
-                return Some(new_item / 3)
+                // Reduce worry level by calculating modulo
+                let new_item = operate(&item, &self.operation).rem_euclid(modulo_value);
+                return Some(new_item / self.reduce_by)
             },
             None => return None
         }
@@ -86,13 +89,22 @@ impl Jungle {
         Jungle { monkeys: Vec::new() }
     }
 
-    pub fn monkey_from_string(&mut self, input:&str) {
-        self.monkeys.push(Monkey::from_string(input))
+    pub fn monkey_from_string(&mut self, input:&str, reduce_by: usize) {
+        self.monkeys.push(Monkey::from_string(input, reduce_by))
+    }
+
+    fn calculate_modulo_value(&self) -> usize {
+        let mut modulo_value: usize = 1;
+        for monkey in self.monkeys.iter() {
+            modulo_value *= monkey.divisible;
+        }
+        return modulo_value;
     }
 
     fn single_round(&mut self) {
+        let modulo_value: usize = self.calculate_modulo_value();
         for monkey_index in 0..self.monkeys.len() {
-            while let Some(item) = self.monkeys[monkey_index].pass() {
+            while let Some(item) = self.monkeys[monkey_index].pass(modulo_value) {
                 let target_monkey = self.monkeys[monkey_index].item_target(&item);
                 self.monkeys[target_monkey].receive(item)
             }
@@ -100,10 +112,8 @@ impl Jungle {
     }
 
     pub fn process_rounds(&mut self, rounds: usize) {
-        for i in 0..rounds {
+        for _ in 0..rounds {
             self.single_round();
-            debug!("After round {:}", i);
-            debug!("{:?}", self.monkeys);
         }
     }
     pub fn report_inspections(&self) {
@@ -137,15 +147,25 @@ fn operate(old: &usize, operation: &Vec<String>) -> usize {
 fn main() {
     let args: Vec<String> = env::args().collect();
     set_logging_level(&args);
+    let rounds: usize;
+    let reduce_by: usize;
+    if args.contains(&String::from("--part2")) {
+        rounds= 10000;
+        reduce_by = 1;
+    } else {
+        rounds = 20;
+        reduce_by = 3;
+    }
+
     let input = read_input(&args);
 
     let mut jungle = Jungle::new();
     // Expect Windows file endings
     for monkey_block in input.split("\r\n\r\n") {
-        jungle.monkey_from_string(monkey_block);
+        jungle.monkey_from_string(monkey_block, reduce_by);
     }
     debug!("{:?}", jungle);
-    jungle.process_rounds(20);
+    jungle.process_rounds(rounds);
     jungle.report_inspections();
 }
 

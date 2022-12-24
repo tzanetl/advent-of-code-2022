@@ -8,6 +8,9 @@ Expects input files to have Windows line endings (`\r\n`)
 
 # Change Log
 
+## Day 11
+- To run part 2 with maximal [monkey business](https://www.youtube.com/watch?v=-g5cdzQIqJM) use flag `--part2`
+
 ## Day 6
 - Takes a keyword argument `--size N` to set the lenght of the start message marker
     - Defaults to 4
