@@ -27,12 +27,6 @@ struct Mountain {
 }
 
 impl Mountain {
-    // fn icell(&self, row: &usize, col: &usize) -> &Cell {
-    //     // https://stackoverflow.com/a/2151141/14536215
-    //     // https://en.wikipedia.org/wiki/Row-_and_column-major_order
-    //     &self.grid[(self.width * row + col)]
-    // }
-
     pub fn from_input(input: &str) -> Mountain {
         let mut width: usize = 0;
         let mut grid: Vec<Cell> = Vec::new();
