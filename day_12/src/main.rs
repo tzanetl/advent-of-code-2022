@@ -128,6 +128,26 @@ impl Mountain {
             starting_cells = reached;
         }
     }
+
+    pub fn reset_grid(&mut self) {
+        for cell in self.grid.iter_mut() {
+            cell.reached = false;
+        }
+        self.grid[self.start].reached = true;
+    }
+
+    pub fn starting_points(&self) -> HashSet<usize> {
+        let starting_value = ALPHABET.iter().position(|&x| x == 'a').unwrap();
+        let mut starting_points = HashSet::new();
+
+        for (index, cell) in self.grid.iter().enumerate() {
+            if cell.value == starting_value {
+                starting_points.insert(index);
+            }
+        }
+        debug!("Starting points: {:?}", starting_points);
+        return starting_points;
+    }
 }
 
 fn main() {
@@ -138,4 +158,22 @@ fn main() {
     debug!("{:?}", mountain);
     let steps: usize = mountain.travel_to_destination().expect("Destination not reachable");
     println!("Destination reached in {} steps", steps);
+
+    let mut minimum_steps: usize = usize::MAX;
+
+    for starting_point in mountain.starting_points() {
+        mountain.start = starting_point;
+        mountain.reset_grid();
+        let steps = mountain.travel_to_destination();
+        match steps {
+            Some(value) => {
+                debug!("{}", value);
+                if value < minimum_steps {
+                    minimum_steps = value;
+                }
+            },
+            None => debug!("Destination not reached when starting from {}", starting_point)
+        }
+    }
+    println!("Destination reached in {} steps from any starting point", minimum_steps);
 }
