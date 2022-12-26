@@ -9,3 +9,13 @@ fn main() {
     set_logging_level(&args);
     let input = read_input(&args);
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_sample() {
+        assert!(true)
+    }
+}
