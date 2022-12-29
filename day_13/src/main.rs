@@ -1,13 +1,24 @@
 use std::env;
+use std::fmt::Debug;
 
 use log::debug;
 
 use utils::{read_input, set_logging_level};
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(PartialEq, Eq)]
 enum Packet {
     List(Vec<Packet>),
     Int(usize)
+}
+
+impl Debug for Packet {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        // f.write_fmt(format_args!("{} {}", self.size, self.name))
+        match self {
+            Packet::Int(value) => f.write_fmt(format_args!("{}", value)),
+            Packet::List(list) => f.write_fmt(format_args!("{:?}", list))
+        }
+    }
 }
 
 impl Packet {
