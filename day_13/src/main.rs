@@ -29,7 +29,6 @@ impl Packet {
 fn parse_list(mut input: &[char]) -> (Packet, &[char]) {
     let mut list = Packet::List(Vec::new());
     let mut packet: Packet;
-    debug!("{:?}", input);
 
     loop {
         if input[0].is_ascii_digit() {
@@ -41,10 +40,9 @@ fn parse_list(mut input: &[char]) -> (Packet, &[char]) {
         } else if input[0] == ',' {
             input = &input[1..];
         } else if input[0] == ']' {
-            break;
+            return (list, &input[1..]);
         }
     }
-    return (list, input);
 }
 
 fn parse_int(input: &[char]) -> (Packet, &[char]) {
@@ -94,5 +92,16 @@ mod tests {
         let (packet, remainder) = parse_int(&input);
         assert_eq!(packet, Packet::Int(42));
         assert_eq!(remainder, [',', ']']);
+    }
+
+    #[test]
+    fn test_parse_packet_8_left() {
+        set_logging_level(&vec!["--test".to_string()]);
+        let packet = Packet::from_line("[1,[2,[3,[4,[5,6,7]]]],8,9]");
+        if let Packet::List(list) = packet {
+            assert_eq!(list.last().unwrap(), &Packet::Int(9));
+        } else {
+            assert!(false)
+        }
     }
 }
