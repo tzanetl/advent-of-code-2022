@@ -1,8 +1,11 @@
 use std::fs;
 use std::path::Path;
+use std::sync::Once;
 
 use log;
 use simple_logger;
+
+static INIT_LOGGING: Once = Once::new();
 
 fn read_file(filepath: &Path) -> String {
     if filepath.exists() == false {
@@ -26,13 +29,16 @@ pub fn read_input(args: &Vec<String>) -> String {
 }
 
 pub fn set_logging_level(args: &Vec<String>) {
-    let level: log::Level;
-    if args.contains(&String::from("--test")) {
-        level = log::Level::Debug;
-    } else {
-        level = log::Level::Info;
-    }
-    simple_logger::init_with_level(level).expect("Failed to init logger")
+    // https://stackoverflow.com/a/43093371/14536215
+    INIT_LOGGING.call_once(|| {
+        let level: log::Level;
+        if args.contains(&String::from("--test")) {
+            level = log::Level::Debug;
+        } else {
+            level = log::Level::Info;
+        }
+        simple_logger::init_with_level(level).expect("Failed to init logger")
+    });
 }
 
 #[cfg(test)]
