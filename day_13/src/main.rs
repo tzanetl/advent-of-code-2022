@@ -104,4 +104,76 @@ mod tests {
             assert!(false)
         }
     }
+
+    #[test]
+    fn test_case_1 () {
+        set_logging_level(&vec!["--test".to_string()]);
+        let left_packet = Packet::from_line("[1,1,3,1,1]");
+        let right_packet = Packet::from_line("[1,1,5,1,1]");
+        let ret = packet_to_packet(&left_packet, &right_packet);
+        assert!(ret == true);
+    }
+
+    #[test]
+    fn test_case_2 () {
+        set_logging_level(&vec!["--test".to_string()]);
+        let left_packet = Packet::from_line("[[1],[2,3,4]]");
+        let right_packet = Packet::from_line("[[1],4]");
+        let ret = packet_to_packet(&left_packet, &right_packet);
+        assert!(ret == true);
+    }
+
+    #[test]
+    fn test_case_3 () {
+        set_logging_level(&vec!["--test".to_string()]);
+        let left_packet = Packet::from_line("[9]");
+        let right_packet = Packet::from_line("[[8,7,6]]");
+        let ret = packet_to_packet(&left_packet, &right_packet);
+        assert!(ret == false);
+    }
+
+    #[test]
+    fn test_case_4 () {
+        set_logging_level(&vec!["--test".to_string()]);
+        let left_packet = Packet::from_line("[[4,4],4,4]");
+        let right_packet = Packet::from_line("[[4,4],4,4,4]");
+        let ret = packet_to_packet(&left_packet, &right_packet);
+        assert!(ret == true);
+    }
+
+    #[test]
+    fn test_case_5 () {
+        set_logging_level(&vec!["--test".to_string()]);
+        let left_packet = Packet::from_line("[7,7,7,7]");
+        let right_packet = Packet::from_line("[7,7,7]");
+        let ret = packet_to_packet(&left_packet, &right_packet);
+        assert!(ret == false);
+    }
+
+    #[test]
+    fn test_case_6 () {
+        set_logging_level(&vec!["--test".to_string()]);
+        let left_packet = Packet::from_line("[]");
+        let right_packet = Packet::from_line("[3]");
+        let ret = packet_to_packet(&left_packet, &right_packet);
+        assert!(ret == true);
+    }
+
+    #[test]
+    fn test_case_7 () {
+        set_logging_level(&vec!["--test".to_string()]);
+        let left_packet = Packet::from_line("[[[]]]");
+        let right_packet = Packet::from_line("[[]]");
+        let ret = packet_to_packet(&left_packet, &right_packet);
+        assert!(ret == false);
+    }
+
+    #[test]
+    fn test_case_8 () {
+        set_logging_level(&vec!["--test".to_string()]);
+        let left_packet = Packet::from_line("[1,[2,[3,[4,[5,6,7]]]],8,9]");
+        let right_packet = Packet::from_line("[1,[2,[3,[4,[5,6,0]]]],8,9]");
+        let ret = packet_to_packet(&left_packet, &right_packet);
+        assert!(ret == false);
+    }
 }
