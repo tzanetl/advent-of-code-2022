@@ -8,6 +8,9 @@ Expects input files to have Windows line endings (`\r\n`)
 
 # Change Log
 
+## Day 13
+- Set logging level now uses `std::sync::Once` to avoid errors if called more than once
+
 ## Day 11
 - To run part 2 with maximal [monkey business](https://www.youtube.com/watch?v=-g5cdzQIqJM) use flag `--part2`
 

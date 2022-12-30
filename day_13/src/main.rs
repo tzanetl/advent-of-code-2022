@@ -38,7 +38,6 @@ impl Packet {
     }
 }
 
-
 fn int_to_int(left_value: &usize, right_value: &usize) -> Ordering {
     return left_value.cmp(right_value);
 }
@@ -143,6 +142,7 @@ fn main() {
     let mut lines = input.lines();
     let mut packet_index: u32 = 1;
     let mut correctly_ordered: Vec<u32> = Vec::new();
+    let mut packets: Vec<Packet> = Vec::new();
     loop {
         let left_line = lines.next();
         if left_line == None {
@@ -161,12 +161,36 @@ fn main() {
 
         // Skip empty line
         lines.next();
+
+        packets.push(left_packet);
+        packets.push(right_packet);
     }
 
     let packet_index_sum: u32 = correctly_ordered.iter().sum();
     println!("correctly ordered packages: {:?}", correctly_ordered);
     println!("Packets analyzed: {}", packet_index - 1);
     println!("Sum of indeses of correctly ordered packages: {packet_index_sum}");
+
+    // Part 2
+    let start_packet = Packet::from_line("[[2]]");
+    let end_packet = Packet::from_line("[[6]]");
+    packets.push(start_packet.clone());
+    packets.push(end_packet.clone());
+    packets.sort_by(|l, r| packet_to_packet(l, r));
+    for p in &packets {
+        debug!("{:?}", p);
+    }
+    let start_position: usize = packets.iter()
+        .position(|p| p == &start_packet).unwrap() + 1;
+    debug!("Start position: {start_position}");
+
+    let end_position: usize = packets.iter()
+        .position(|p| p == &end_packet).unwrap() + 1;
+    debug!("End position: {end_position}");
+
+    let decoder_key = start_position * end_position;
+    println!("Decoded key: {decoder_key}");
+
 }
 
 #[cfg(test)]
