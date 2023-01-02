@@ -1,5 +1,6 @@
 use std::env;
 use std::collections::HashMap;
+use std::time::Instant;
 
 use log::debug;
 
@@ -125,15 +126,14 @@ fn print_map(map: &HashMap<Coordinate, Tile>, x_range: [u32; 2], y_range: [u32; 
 }
 
 fn lowest_point(map: &HashMap<Coordinate, Tile>, x: u32, from_y: u32) -> Option<u32> {
-    let keys: Vec<&Coordinate> = map.keys().collect();
-    let mut keys_filtered: Vec<&&Coordinate> = keys.iter()
+    let mut keys_filtered: Vec<&Coordinate> = map.keys().into_iter()
         .filter(|c| (c.x == x) & (c.y > from_y))
         .collect();
 
     if keys_filtered.len() == 0 {
         return None;
     }
-    keys_filtered.sort_by_key(|c| c.y);
+    keys_filtered.sort_unstable_by_key(|c| c.y);
 
     return Some(keys_filtered[0].y - 1);
 }
@@ -169,15 +169,65 @@ fn drop_sand(mut map: HashMap<Coordinate, Tile>) -> (HashMap<Coordinate, Tile>, 
     }
 }
 
+fn drop_sand_to_floor(mut map: HashMap<Coordinate, Tile>, floor_y: u32)
+    -> (HashMap<Coordinate, Tile>, u32) {
+    let mut x: u32;
+    let mut y: u32;
+    let mut sand_dropped: u32 = 0;
+
+    loop {
+        x = 500;
+        y = 0;
+
+        loop {
+            y = match lowest_point(&map, x, y) {
+                Some(value) => value,
+                None => {
+                    map.insert(Coordinate {x, y: floor_y}, Tile::Sand);
+                    break;
+                }
+            };
+            if map.get(&Coordinate{x: x - 1, y: y + 1}) == None {
+                x -= 1;
+                continue;
+            }
+            if map.get(&Coordinate{x: x + 1, y: y + 1}) == None {
+                x += 1;
+                continue;
+            }
+            map.insert(Coordinate{x, y}, Tile::Sand);
+
+            if (x == 500) & (y == 0) {
+                sand_dropped += 1;
+                return (map, sand_dropped);
+            }
+            break;
+        }
+        sand_dropped += 1;
+        debug!("sand dropped: {sand_dropped}");
+        debug!("\n{}", print_map(&map, [494, 503], [0, 9]));
+    }
+}
+
 fn main() {
     let args: Vec<String> = env::args().collect();
     set_logging_level(&args);
     let input = read_input(&args);
     let map = create_map(&input);
+    let now = Instant::now();
     let (map, sand_count) = drop_sand(map);
+    let elapsed_time = now.elapsed();
+    println!("Part 1 took: {:?}", elapsed_time);
     debug!("{}", print_map(&map, [494, 503], [0, 9]));
-    println!("Sand dropped before filling up: {sand_count}");
+    println!("Sand dropped before overflow: {sand_count}");
 
+    // Part 2
+    let mut keys: Vec<&Coordinate> = map.keys().collect();
+    keys.sort_by_key(|c| c.y);
+    let floor_y: u32 = keys.last().unwrap().y + 1;
+    let (map, sand_count_to_floor) = drop_sand_to_floor(map, floor_y);
+    debug!("\n{}", print_map(&map, [488, 515], [0, 10]));
+    println!("Sand dropped before filling up: {}", sand_count + sand_count_to_floor);
 }
 
 #[cfg(test)]
