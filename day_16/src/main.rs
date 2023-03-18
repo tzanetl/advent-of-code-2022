@@ -1,9 +1,11 @@
 use std::str::FromStr;
 use std::env;
 use std::collections::{HashMap, VecDeque, HashSet};
+use std::time::Instant;
 
 use regex::Regex;
 use lazy_static::lazy_static;
+use itertools::Itertools;
 
 use utils::read_input;
 
@@ -147,7 +149,7 @@ fn part1(
             let mut cache_key: HashSet<&usize> = current_state.visited.clone();
             cache_key.insert(next_valve);
             let time_remaining: u32 = current_state.time_remaining - travel_time - 1;
-            let released_pressure: u32 = 
+            let released_pressure: u32 =
                 flow_rate[next_valve]
                 * time_remaining
                 + current_state.released_pressure;
@@ -164,8 +166,38 @@ fn part1(
     return max_pressure_released;
 }
 
+fn dereference_vec<T>(hs: Vec<&T>) -> Vec<T> where T: Eq, T: Copy {
+    let mut new: Vec<T> = Vec::new();
+    for item in hs {
+        new.push(*item);
+    };
+    new
+}
+
+
+fn part2(
+    flow_rate: &HashMap<usize, u32>,
+    valves: &Vec<usize>,
+    distance: &Vec<Vec<u32>>,
+    start_position: &usize
+) -> u32 {
+    let mut max_released_pressure: u32 = 0;
+    for r in 2..=14 {
+        for myself in valves.iter().combinations(r) {
+            let mut elephant = valves.clone();
+            elephant.retain(|v| !myself.contains(&v));
+            let released_pressure =
+                part1(flow_rate, &dereference_vec(myself), distance, start_position, 26)
+                + part1(flow_rate, &elephant, distance, start_position, 26);
+            max_released_pressure = max_released_pressure.max(released_pressure);
+        }
+    }
+    return max_released_pressure;
+}
+
 
 fn main() {
+    let now = Instant::now();
     let args: Vec<String> = env::args().collect();
     let input: String = read_input(&args);
 
@@ -180,8 +212,18 @@ fn main() {
     let distance = make_distance_map(&parsed);
 
     let (flow_rate, functional_vales, start_position) = make_valves(&parsed);
+    let parsing_time = now.elapsed();
+    println!("Parsing took: {:.2?}", parsing_time);
+    let now = Instant::now();
     let part_1_result = part1(&flow_rate, &functional_vales, &distance, &start_position, 30);
+    let part_1_time = now.elapsed();
     println!("Part 1: {part_1_result}");
+    println!("Part 1 took: {:.2?}", part_1_time);
+    let now = Instant::now();
+    let part_2_result = part2(&flow_rate, &functional_vales, &distance, &start_position);
+    let part_2_time = now.elapsed();
+    println!("Part 2: {part_2_result}");
+    println!("Part 2 took: {:.2?}", part_2_time);
 }
 
 #[cfg(test)]
