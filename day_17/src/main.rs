@@ -166,7 +166,7 @@ impl Rock {
 trait RockMap {
     fn add_rows(&mut self, rock_height: &usize) -> Coordinate;
     fn add_rock(&mut self, rock: &Rock, position: &Coordinate);
-    fn print_map(&self);
+    fn print_map(&self, tail: Option<usize>);
     fn pile_height(&self) -> usize;
 }
 
@@ -203,9 +203,14 @@ impl RockMap for Vec<Vec<bool>> {
         }
     }
 
-    fn print_map(&self) {
+    fn print_map(&self, tail: Option<usize>) {
         println!("");
-        for row in self.iter().rev() {
+        for (i, row) in self.iter().rev().enumerate() {
+            if let Some(limit) = tail {
+                if limit == i {
+                    return;
+                }
+            }
             let mut row_s: String = "".to_owned();
             for block in row {
                 if *block {
@@ -230,7 +235,7 @@ impl RockMap for Vec<Vec<bool>> {
     }
 }
 
-fn drop_rocks(jets: &mut JetPattern) -> usize {
+fn drop_rocks(jets: &mut JetPattern, rocks: usize) -> Vec<Vec<bool>> {
     // Init map
     let mut map: Vec<Vec<bool>> = vec![
         vec![true; MAP_WIDTH as usize],
@@ -239,42 +244,47 @@ fn drop_rocks(jets: &mut JetPattern) -> usize {
         vec![false; MAP_WIDTH as usize]
     ];
 
-    for i in (0..2022).progress() {
-        // debug!("{}: {}", i, map.len());
-
-        let rock: Rock = match i % 5 {
-            0 => Rock::wide_rock(),
-            1 => Rock::plus_rock(),
-            2 => Rock::l_rock(),
-            3 => Rock::tall_rock(),
-            4 => Rock::square_rock(),
-            _ => unreachable!()
-        };
-        let mut position = map.add_rows(&rock.height);
-
-        loop {
-            let direction = jets.next_direction();
-
-            if direction == Direction::Right {
-                if !rock.collides_right(&map, &position) {
-                    position.x += 1;
-                }
-            } else {
-                if !rock.collides_left(&map, &position) {
-                    position.x -= 1;
-                }
-            }
-
-            if rock.bottoms_out(&map, &position) {
-                break;
-            }
-            position.y -= 1;
-        }
-
-        map.add_rock(&rock, &position);
+    for i in (0..rocks).progress() {
+        drop_single_rock(jets, &mut map, &i)
         // map.print_map();
     }
-    return map.pile_height();
+    return map;
+}
+
+fn drop_single_rock(jets: &mut JetPattern, map: &mut Vec<Vec<bool>>, i: &usize) {
+    let rock: Rock = match i % 5 {
+        0 => Rock::wide_rock(),
+        1 => Rock::plus_rock(),
+        2 => Rock::l_rock(),
+        3 => Rock::tall_rock(),
+        4 => Rock::square_rock(),
+        _ => unreachable!()
+    };
+    let mut position = map.add_rows(&rock.height);
+
+    loop {
+        let direction = jets.next_direction();
+
+        if direction == Direction::Right {
+            if !rock.collides_right(&map, &position) {
+                position.x += 1;
+            }
+        } else {
+            if !rock.collides_left(&map, &position) {
+                position.x -= 1;
+            }
+        }
+
+        if rock.bottoms_out(&map, &position) {
+            break;
+        }
+        position.y -= 1;
+    }
+    map.add_rock(&rock, &position);
+}
+
+fn part_2(input: &str) {
+    !todo!();
 }
 
 fn main() {
@@ -282,8 +292,8 @@ fn main() {
     set_logging_level(&args);
     let input = read_input(&args);
     let mut jets = JetPattern::new(&input);
-    let tower_height = drop_rocks(&mut jets);
-    println!("Tower height: {tower_height}");
+    let rock_map = drop_rocks(&mut jets, 2022);
+    println!("Tower height part 1: {}", rock_map.pile_height());
 }
 
 #[cfg(test)]
