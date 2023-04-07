@@ -65,13 +65,20 @@ fn parse_coordinates(input: &str) -> HashSet<Coordinate> {
     return coordinates;
 }
 
-fn part_1(coordinates: &HashSet<Coordinate>) -> u32 {
+fn part_1(coordinates: &HashSet<Coordinate>, water: Option<&HashSet<Rc<Coordinate>>>) -> u32 {
     let mut total_faces: u32 = 0;
     for coordinate in coordinates {
         let mut free_faces: u32 = 6;
         for position in coordinate.surroundings() {
             if coordinates.contains(&position) {
                 free_faces -= 1;
+                continue;
+            }
+            if let Some(water) = water {
+                if !water.contains(&position) {
+                    free_faces -= 1;
+                    continue;
+                }
             }
         }
         total_faces += free_faces;
@@ -86,7 +93,7 @@ struct Limits {
 }
 
 impl Limits {
-    fn search_limits(coordinates: &Vec<Coordinate>) -> Self {
+    fn search_limits(coordinates: &HashSet<Coordinate>) -> Self {
         let mut x_min: i32 = i32::MAX;
         let mut x_max: i32 = i32::MIN;
         let mut y_min: i32 = i32::MAX;
@@ -139,7 +146,7 @@ impl Limits {
     }
 }
 
-fn part_2(lava_droplets: &Vec<Coordinate>) -> u32 {
+fn part_2(lava_droplets: &HashSet<Coordinate>) -> u32 {
     let limits = Limits::search_limits(lava_droplets);
     let starting_point = Rc::new(Coordinate {
         x: *limits.x.start(),
@@ -163,7 +170,7 @@ fn part_2(lava_droplets: &Vec<Coordinate>) -> u32 {
             water.insert(water_droplet);
         }
     }
-    todo!()
+    return part_1(lava_droplets, Some(&water));
 }
 
 fn main() {
@@ -171,8 +178,10 @@ fn main() {
     set_logging_level(&args);
     let input = read_input(&args);
     let coordinates = parse_coordinates(&input[..]);
-    let total_surface_area: u32 = part_1(&coordinates);
+    let total_surface_area: u32 = part_1(&coordinates, None);
     println!("Lava droplet surface area: {total_surface_area}");
+    let cooled_surface_area: u32 = part_2(&coordinates);
+    println!("Lava droplet surface area cooled down: {cooled_surface_area}");
 }
 
 #[cfg(test)]
@@ -181,9 +190,9 @@ mod tests {
 
     #[test]
     fn test_limits_search_limits() {
-        let coordinates = vec![
+        let coordinates = HashSet::from([
             Coordinate {x: 1, y: 2, z: 3}
-        ];
+        ]);
         let limits = Limits::search_limits(&coordinates);
         assert_eq!(limits.x, 0..=2);
         assert_eq!(limits.y, 1..=3);
