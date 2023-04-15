@@ -1,57 +1,62 @@
 use std::env;
+use std::collections::VecDeque;
 
 use utils::read_input;
 
-fn parse_numbers(input: &str) -> Vec<i32> {
+fn parse_numbers(input: &str) -> Vec<i64> {
     let numbers = input
         .lines()
-        .map(|c| c.parse::<i32>().expect("Unable to parse {c}"))
+        .map(|c| c.parse::<i64>().expect("Unable to parse {c}"))
         .collect();
     return numbers;
 }
 
 #[allow(dead_code)]
-fn print_indexes(numbers: &Vec<i32>, indexes: &Vec<usize>) {
-    let mut temp: Vec<&i32> = vec![];
-    for index in indexes {
-        temp.push(&numbers[*index]);
+fn print_ring(ring: &VecDeque<Pair>) {
+    let mut temp: Vec<&i64> = vec![];
+    for item in ring {
+        temp.push(item.1);
     }
     println!("{:?}", temp);
 }
 
-fn circular_position(lenght: i32, current_position: i32, movement: i32) -> usize {
-    let new_position = current_position + movement;
-    let mut circulation: i32 = new_position / lenght;
-    if movement.is_negative() {
-        circulation = -1;
-    }
-    return (new_position + circulation).rem_euclid(lenght) as usize;
-}
 
-fn part_1(numbers: &Vec<i32>) -> i32 {
-    let mut indexes: Vec<usize> = (0..numbers.len()).collect();
-    let lenght: i32 = numbers.len() as i32;
-    let mut zero_index: Option<usize> = None;
+type Pair <'a> = (usize, &'a i64);
 
-    for (index, movement) in numbers.iter().enumerate() {
-        if movement == &0 {
-            zero_index = Some(index);
+fn part_1(numbers: &Vec<i64>) -> i64 {
+    let mut ring: VecDeque<Pair> = numbers.iter().enumerate().map(|(i, n)| (i, n)).collect();
+    // print_ring(&ring);
+
+    for index in 0..numbers.len() {
+        let ring_index: usize = ring.iter().position(|p| p.0 == index).unwrap();
+
+        if ring[ring_index].1 == &0 {
+            // print_ring(&ring);
             continue;
         }
-        let current_position = indexes.iter().position(|&i| i==index).unwrap();
-        indexes.remove(current_position);
-        let new_position = circular_position(lenght, current_position as i32, *movement);
-        indexes.insert(new_position, index);
-        // print_indexes(numbers, &indexes);
+
+        let item: Pair = ring.remove(ring_index).unwrap();
+        let rotations: usize = item.1.abs().rem_euclid(ring.len() as i64) as usize;
+
+        if item.1.is_positive() {
+            ring.rotate_left(rotations)
+        } else {
+            ring.rotate_right(rotations)
+        }
+
+        ring.insert(ring_index, item);
+        // print_ring(&ring);
     }
-    let starting_point = indexes.iter().position(|&i| i==zero_index.unwrap()).unwrap();
-    let mut result: i32 = 0;
+
+    let zero_index: usize = ring.iter().position(|p| p.1 == &0).unwrap();
+    let mut result: i64 = 0;
+    // println!("{zero_index}");
 
     for nth in [1000, 2000, 3000] {
-        let index_index = (starting_point + nth).rem_euclid(lenght as usize);
-        let number_index = indexes[index_index];
-        let to_add = numbers[number_index];
-        result += to_add;
+        let index: usize = (zero_index + nth).rem_euclid(numbers.len());
+        // println!("Index: {index}");
+        // println!("{:?}", ring[index].1);
+        result += ring[index].1;
     }
     return result;
 }
