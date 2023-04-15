@@ -1,7 +1,9 @@
 use std::env;
 use std::collections::VecDeque;
 
-use utils::read_input;
+use log::debug;
+
+use utils::{read_input, set_logging_level};
 
 fn parse_numbers(input: &str) -> Vec<i64> {
     let numbers = input
@@ -12,12 +14,12 @@ fn parse_numbers(input: &str) -> Vec<i64> {
 }
 
 #[allow(dead_code)]
-fn print_ring(ring: &VecDeque<Pair>) {
+fn print_ring(ring: &VecDeque<Pair>) -> String{
     let mut temp: Vec<&i64> = vec![];
     for item in ring {
         temp.push(item.1);
     }
-    println!("{:?}", temp);
+    return format!("{:?}", temp);
 }
 
 
@@ -25,13 +27,13 @@ type Pair <'a> = (usize, &'a i64);
 
 fn part_1(numbers: &Vec<i64>) -> i64 {
     let mut ring: VecDeque<Pair> = numbers.iter().enumerate().map(|(i, n)| (i, n)).collect();
-    // print_ring(&ring);
+    debug!("{}", print_ring(&ring));
 
     for index in 0..numbers.len() {
         let ring_index: usize = ring.iter().position(|p| p.0 == index).unwrap();
 
         if ring[ring_index].1 == &0 {
-            // print_ring(&ring);
+            debug!("{}", print_ring(&ring));
             continue;
         }
 
@@ -45,17 +47,17 @@ fn part_1(numbers: &Vec<i64>) -> i64 {
         }
 
         ring.insert(ring_index, item);
-        // print_ring(&ring);
+        debug!("{}", print_ring(&ring));
     }
 
     let zero_index: usize = ring.iter().position(|p| p.1 == &0).unwrap();
     let mut result: i64 = 0;
-    // println!("{zero_index}");
+    debug!("Zero index: {zero_index}");
 
     for nth in [1000, 2000, 3000] {
         let index: usize = (zero_index + nth).rem_euclid(numbers.len());
-        // println!("Index: {index}");
-        // println!("{:?}", ring[index].1);
+        debug!("Index: {index}");
+        debug!("{:?}", ring[index].1);
         result += ring[index].1;
     }
     return result;
@@ -64,6 +66,7 @@ fn part_1(numbers: &Vec<i64>) -> i64 {
 fn main() {
     let args: Vec<String> = env::args().collect();
     let input = read_input(&args);
+    set_logging_level(&args);
     let numbers = parse_numbers(&input[..]);
     let part_1_coordinates = part_1(&numbers);
     println!("Part 1 coordinates: {part_1_coordinates}");

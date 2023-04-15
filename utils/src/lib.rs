@@ -2,10 +2,24 @@ use std::fs;
 use std::path::Path;
 use std::sync::Once;
 
-use log;
-use simple_logger;
+use log::{Record, Metadata};
 
 static INIT_LOGGING: Once = Once::new();
+
+static MY_LOGGER: MyLogger = MyLogger;
+
+struct MyLogger;
+
+impl log::Log for MyLogger {
+    fn enabled(&self, metadata: &Metadata) -> bool {
+        metadata.level() <= log::max_level()
+    }
+
+    fn log(&self, record: &Record) {
+        println!("{}", record.args());
+    }
+    fn flush(&self) {}
+}
 
 fn read_file(filepath: &Path) -> String {
     if filepath.exists() == false {
@@ -31,13 +45,14 @@ pub fn read_input(args: &Vec<String>) -> String {
 pub fn set_logging_level(args: &Vec<String>) {
     // https://stackoverflow.com/a/43093371/14536215
     INIT_LOGGING.call_once(|| {
-        let level: log::Level;
+        let level: log::LevelFilter;
         if args.contains(&String::from("--test")) {
-            level = log::Level::Debug;
+            level = log::LevelFilter::Debug;
         } else {
-            level = log::Level::Info;
+            level = log::LevelFilter::Info;
         }
-        simple_logger::init_with_level(level).expect("Failed to init logger")
+        log::set_logger(&MY_LOGGER).unwrap();
+        log::set_max_level(level);
     });
 }
 
